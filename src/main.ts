@@ -19,6 +19,10 @@ productModel.setItems(apiProducts.items);
 console.log('Каталог товаров:', productModel.getItems());
 console.log('Товар с ID c101...:', productModel.getItem('c101ab44-ed99-4a54-990d-47aa2bb4e7d9'));
 
+const testProduct = apiProducts.items[0];
+productModel.setPreviewItem(testProduct);
+console.log('Выбранный для просмотра товар:', productModel.getPreviewItem());
+
 const basketModel = new BasketModel();
 const [product1, product2] = apiProducts.items.slice(0, 2);
 basketModel.addItem(product1);
@@ -26,6 +30,12 @@ basketModel.addItem(product2);
 console.log('Корзина:', basketModel.getItems());
 console.log('Сумма в корзине:', basketModel.getTotal());
 console.log('Количество товаров:', basketModel.getCount());
+
+basketModel.removeItem(product1.id);
+console.log('Корзина после удаления товара:', basketModel.getItems());
+
+basketModel.clearBasket();
+console.log('Корзина после очистки:', basketModel.getItems());
 
 const buyerModel = new BuyerModel();
 buyerModel.setData({ email: 'test@mail.ru', address: 'Москва' });

@@ -1,7 +1,9 @@
 import { IBuyer } from '../../types';
 
+export type BuyerValidationErrors = Record<keyof IBuyer, string>;
+
 export class BuyerModel {
-    private _data: IBuyer = {
+    private data: IBuyer = {
         payment: null,
         email: '',
         phone: '',
@@ -9,15 +11,15 @@ export class BuyerModel {
     };
 
     setData(data: Partial<IBuyer>): void {
-        this._data = { ...this._data, ...data };
+        this.data = { ...this.data, ...data };
     }
 
     getData(): IBuyer {
-        return { ...this._data };
+        return { ...this.data };
     }
 
     clearData(): void {
-        this._data = {
+        this.data = {
             payment: null,
             email: '',
             phone: '',
@@ -25,22 +27,27 @@ export class BuyerModel {
         };
     }
 
-    validate(): Record<keyof IBuyer, string> | null {
-        const errors: Partial<Record<keyof IBuyer, string>> = {};
+    validate(): BuyerValidationErrors {
+        const errors: BuyerValidationErrors = {
+            payment: '',
+            email: '',
+            phone: '',
+            address: ''
+        };
 
-        if (!this._data.payment) {
+        if (!this.data.payment) {
             errors.payment = 'Не выбран способ оплаты';
         }
-        if (!this._data.address?.trim()) {
+        if (!this.data.address?.trim()) {
             errors.address = 'Не указан адрес доставки';
         }
-        if (!this._data.email?.trim()) {
+        if (!this.data.email?.trim()) {
             errors.email = 'Не указан email';
         }
-        if (!this._data.phone?.trim()) {
+        if (!this.data.phone?.trim()) {
             errors.phone = 'Не указан телефон';
         }
 
-        return Object.keys(errors).length > 0 ? (errors as Record<keyof IBuyer, string>) : null;
+        return errors;
     }
 }
