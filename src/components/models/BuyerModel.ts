@@ -1,8 +1,7 @@
 import { IBuyer } from '../../types';
+import { EventEmitter } from '../base/Events';
 
-export type BuyerValidationErrors = Record<keyof IBuyer, string>;
-
-export class BuyerModel {
+export class BuyerModel extends EventEmitter {
     private data: IBuyer = {
         payment: null,
         email: '',
@@ -12,6 +11,7 @@ export class BuyerModel {
 
     setData(data: Partial<IBuyer>): void {
         this.data = { ...this.data, ...data };
+        this.emit('buyer:changed', { data: this.data });
     }
 
     getData(): IBuyer {
@@ -25,29 +25,14 @@ export class BuyerModel {
             phone: '',
             address: ''
         };
+        this.emit('buyer:changed', { data: this.data });
     }
 
-    validate(): BuyerValidationErrors {
-        const errors: BuyerValidationErrors = {
-            payment: '',
-            email: '',
-            phone: '',
-            address: ''
-        };
-
-        if (!this.data.payment) {
-            errors.payment = 'Не выбран способ оплаты';
-        }
-        if (!this.data.address?.trim()) {
-            errors.address = 'Не указан адрес доставки';
-        }
-        if (!this.data.email?.trim()) {
-            errors.email = 'Не указан email';
-        }
-        if (!this.data.phone?.trim()) {
-            errors.phone = 'Не указан телефон';
-        }
-
-        return errors;
+    isValid(): boolean {
+        const data = this.data;
+        return !!data.payment && 
+               data.address.trim() !== '' && 
+               data.email.trim() !== '' && 
+               data.phone.trim() !== '';
     }
 }

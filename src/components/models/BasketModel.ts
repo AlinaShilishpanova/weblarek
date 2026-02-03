@@ -1,24 +1,31 @@
 import { IProduct } from '../../types';
+import { EventEmitter } from '../base/Events';
 
-export class BasketModel {
+export class BasketModel extends EventEmitter {
     private items: IProduct[] = [];
 
     getItems(): IProduct[] {
-        return this.items;
+        return [...this.items];
     }
 
     addItem(item: IProduct): void {
         if (!this.contains(item.id)) {
             this.items.push(item);
+            this.emit('basket:changed', { items: [...this.items] });
         }
     }
 
     removeItem(id: string): void {
-        this.items = this.items.filter(item => item.id !== id);
+        const index = this.items.findIndex(item => item.id === id);
+        if (index !== -1) {
+            this.items.splice(index, 1);
+            this.emit('basket:changed', { items: [...this.items] });
+        }
     }
 
     clearBasket(): void {
         this.items = [];
+        this.emit('basket:changed', { items: [...this.items] });
     }
 
     getTotal(): number {

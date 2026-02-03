@@ -126,7 +126,7 @@ Presenter - презентер содержит основную логику п
 Управляет состоянием корзины покупок.
 
 Поля класса:
-`_items: IProduct[]` - массив товаров в корзине.
+`items: IProduct[]` - массив товаров в корзине.
 
 Методы класса:
 `getItems(): IProduct[]` - возвращает копию массива товаров в корзине.
@@ -141,13 +141,13 @@ Presenter - презентер содержит основную логику п
 Хранит и валидирует данные покупателя, необходимые для оформления заказа.
 
 Поля класса:
-`_data: IBuyer` - объект, содержащий все данные покупателя: способ оплаты (payment), адрес доставки (address), email и телефон.
+`data: IBuyer` - объект, содержащий все данные покупателя: способ оплаты (payment), адрес доставки (address), email и телефон.
 
 Методы класса:
 `setData(data: Partial<IBuyer>): void` - обновляет данные покупателя.
 `getData(): IBuyer` - возвращает полную копию объекта с данными покупателя.
 `clearData(): void` - сбрасывает все данные покупателя к начальным значениям.
-`validate(): Record<keyof IBuyer, string> | null` - проверяет заполненность всех обязательных полей.
+`validate(): BuyerValidationErrors` - проверяет заполненность всех обязательных полей.
 
 ### Слой коммуникации
 Отвечает за взаимодействие с внешним API сервера.
@@ -160,5 +160,151 @@ Presenter - презентер содержит основную логику п
 Методы класса:
 `getProductList(): Promise<IProduct[]>` - запрашивает список товаров.
 `submitOrder(order: IOrder): Promise<IOrderResult>` - отправляет данные заказа.
-`get<T extends object>(uri: string): Promise<T>` - реализация метода интерфейса IApi для GET-запросов.
-`post<T extends object>(uri: string, data: object, method?: ApiPostMethods): Promise<T>` - реализация метода интерфейса IApi для POST-запросов.
+
+### Слой Представления
+
+Отвечает за отображение данных на странице и взаимодействие с пользователем.
+
+#### Базовый класс `Component`
+(Наследуется от базового Component из стартового набора)
+
+#### Класс `Header`
+Управляет шапкой сайта с логотипом и корзиной.
+
+Поля:
+`basketButton: HTMLButtonElement` - кнопка открытия корзины.
+`counterElement: HTMLElement` - элемент счётчика товаров в корзине.
+
+Методы:
+- `set counter(value: number): void` - устанавливает значение счётчика.
+- `render(data: HeaderData): HTMLElement` - отображает шапку.
+
+Генерируемые события:
+- `'basket:open'` - при клике на кнопку корзины.
+
+#### Класс `Gallery`
+Отображает каталог товаров на главной странице.
+
+Поля:
+`container: HTMLElement` - элемент с классом `.gallery`.
+
+Методы:
+`set catalog(items: HTMLElement[]): void` - отображает список карточек товаров.
+`render(): HTMLElement` - возвращает контейнер галереи.
+
+#### Класс `Modal`
+Контейнер для модальных окон.
+
+Поля:
+`contentElement: HTMLElement` - элемент для контента.
+`closeButton: HTMLButtonElement` - кнопка закрытия.
+
+Методы:
+`open(content: HTMLElement): void` - открывает модальное окно с переданным контентом.
+`close(): void` - закрывает модальное окно.
+`render(): HTMLElement` - возвращает модальное окно.
+
+Генерируемые события:
+`'modal:close'` - при закрытии модального окна.
+
+#### Базовый класс `Card`
+Базовый класс для всех вариантов карточек товара.
+
+Поля:
+`imageElement: HTMLImageElement` - изображение товара.
+`titleElement: HTMLElement` - заголовок товара.
+`categoryElement: HTMLElement` - категория товара.
+`priceElement: HTMLElement` - цена товара.
+
+Методы:
+`render(data: IProduct): HTMLElement` - отображает карточку с данными товара.
+
+#### Класс `CatalogCard`
+(Наследуется от `Card`)
+Карточка товара в каталоге на главной странице.
+
+Генерируемые события:
+`'card:select'` - при клике на карточку (передаёт ID товара).
+
+#### Класс `PreviewCard`
+(Наследуется от `Card`)
+Карточка товара в модальном окне предпросмотра.
+
+Дополнительные поля:
+`descriptionElement: HTMLElement` - описание товара.
+`buttonElement: HTMLButtonElement` - кнопка "Купить"/"Удалить".
+
+Генерируемые события:
+`'product:add'` - при клике на "Купить" (передаёт товар).
+`'product:remove'` - при клике на "Удалить" (передаёт ID товара).
+
+#### Класс `BasketCard`
+(Наследуется от `Card`)
+Карточка товара в корзине.
+
+Дополнительные поля:
+`indexElement: HTMLElement` - порядковый номер.
+`deleteButton: HTMLButtonElement` - кнопка удаления.
+
+Генерируемые события:
+`'product:remove'` - при клике на кнопку удаления (передаёт ID товара).
+
+#### Базовый класс `Form`
+Базовый класс для форм.
+
+Поля:
+`errorElement: HTMLElement` - элемент для отображения ошибок.
+`submitButton: HTMLButtonElement` - кнопка отправки формы.
+
+Методы:
+`set errors(errors: Record<string, string>): void` - отображает ошибки валидации.
+`set valid(value: boolean): void` - активирует/деактивирует кнопку отправки.
+
+#### Класс `OrderForm`
+(Наследуется от `Form`)
+Форма первого шага оформления заказа (оплата и адрес).
+
+Поля:
+`paymentButtons: NodeListOf<HTMLButtonElement>` - кнопки выбора способа оплаты.
+`addressInput: HTMLInputElement` - поле ввода адреса.
+
+Генерируемые события:
+`'order:submit'` - при отправке формы (передаёт данные: {payment, address}).
+`'form:change'` - при изменении данных формы.
+
+#### Класс `ContactsForm`
+(Наследуется от `Form`)
+Форма второго шага оформления заказа (email и телефон).
+
+Поля:
+- `emailInput: HTMLInputElement` - поле ввода email.
+- `phoneInput: HTMLInputElement` - поле ввода телефона.
+
+Генерируемые события:
+`'order:pay'` - при отправке формы (передаёт данные: {email, phone}).
+`'form:change'` - при изменении данных формы.
+
+#### Класс `Basket`
+Отображает содержимое корзины.
+
+Поля:
+`listElement: HTMLElement` - список товаров.
+`totalElement: HTMLElement` - элемент общей суммы.
+`orderButton: HTMLButtonElement` - кнопка оформления заказа.
+
+Методы:
+`set items(items: HTMLElement[]): void` - отображает список товаров.
+`set total(value: number): void` - отображает общую сумму.
+`set valid(value: boolean): void` - активирует/деактивирует кнопку оформления.
+
+Генерируемые события:
+`'order:open'` - при клике на кнопку оформления заказа.
+
+#### Класс `SuccessModal`
+Отображает сообщение об успешном заказе.
+
+Поля:
+`closeButton: HTMLButtonElement` - кнопка закрытия.
+
+Генерируемые события:
+`'success:close'` - при закрытии модального окна.

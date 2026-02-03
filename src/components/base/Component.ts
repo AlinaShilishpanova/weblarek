@@ -2,7 +2,7 @@
  * Базовый компонент
  */
 export abstract class Component<T> {
-    protected constructor(protected readonly container: HTMLElement) {
+    constructor(public readonly container: HTMLElement) {
         // Учитывайте что код в конструкторе исполняется ДО всех объявлений в дочернем классе
     }
 
@@ -15,6 +15,13 @@ export abstract class Component<T> {
             if (alt) {
                 element.alt = alt;
             }
+        }
+    }
+
+    // Установить текстовое содержимое
+    protected setText(element: HTMLElement, text: string | number) {
+        if (element) {
+            element.textContent = String(text);
         }
     }
 
