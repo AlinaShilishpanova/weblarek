@@ -2,33 +2,42 @@ import { Component } from '../base/Component';
 import { ensureElement } from '../../utils/utils';
 import { IEvents } from '../base/Events';
 
-export abstract class Form<T> extends Component<T> {
-    protected _submitButton: HTMLButtonElement;
-    protected _errorElement: HTMLElement;
+export class Form<T> extends Component<T> {
+    protected submitButton: HTMLButtonElement;
+    protected errorElement: HTMLElement;
 
-    constructor(protected container: HTMLElement, protected events: IEvents) {
+    constructor(protected events: IEvents, container: HTMLElement) {
         super(container);
         
-        this._submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', container);
-        this._errorElement = ensureElement<HTMLElement>('.form__errors', container);
+        this.submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', container);
+        this.errorElement = ensureElement<HTMLElement>('.form__errors', container);
 
         this.container.addEventListener('submit', (e: Event) => {
             e.preventDefault();
-            this.events.emit(`${this.container.id}:submit`);
+            this.events.emit(`${this.constructor.name.toLowerCase()}:submit`);
         });
     }
 
-    set errors(messages: string[]) {
-        this.setTextContent(this._errorElement, messages.join(', '));
-        this._errorElement.classList.toggle('modal__message_error', messages.length > 0);
+    protected onInputChange(field: keyof T, value: string) {
+        this.events.emit(`${this.constructor.name.toLowerCase()}:change`, {
+            field,
+            value
+        });
     }
 
-    clearErrors() {
-        this.setTextContent(this._errorElement, '');
-        this._errorElement.classList.remove('modal__message_error');
+    set valid(value: boolean) {
+        this.submitButton.disabled = !value;
     }
 
-    private setTextContent(element: HTMLElement, text: string) {
-        element.textContent = text;
+    set errors(value: string) {
+        this.errorElement.textContent = value;
+    }
+
+    render(data?: Partial<T> & { valid?: boolean; errors?: string }): HTMLElement {
+        const { valid, errors, ...inputs } = data || {};
+        if (valid !== undefined) this.valid = valid;
+        if (errors !== undefined) this.errors = errors;
+        Object.assign(this, inputs);
+        return this.container;
     }
 }

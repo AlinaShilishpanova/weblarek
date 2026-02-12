@@ -28,22 +28,28 @@ export class BuyerModel extends EventEmitter {
         this.emit('buyer:changed');
     }
 
-    validatePaymentAndAddress(): { isValid: boolean; errors: string[] } {
-        const errors: string[] = [];
-        if (!this.data.payment) errors.push('Не выбран способ оплаты');
-        if (!this.data.address?.trim()) errors.push('Не указан адрес доставки');
-        return { isValid: errors.length === 0, errors };
-    }
-
-    validateContacts(): { isValid: boolean; errors: string[] } {
-        const errors: string[] = [];
-        if (!this.data.email?.trim()) errors.push('Не указан email');
-        if (!this.data.phone?.trim()) errors.push('Не указан телефон');
-        return { isValid: errors.length === 0, errors };
-    }
-
-    isValid(): boolean {
-        return this.validatePaymentAndAddress().isValid && 
-               this.validateContacts().isValid;
+    validate(): { isValid: boolean; errors: Partial<Record<keyof IBuyer, string>> } {
+        const errors: Partial<Record<keyof IBuyer, string>> = {};
+        
+        if (!this.data.payment) {
+            errors.payment = 'Не выбран способ оплаты';
+        }
+        
+        if (!this.data.address || this.data.address.trim() === '') {
+            errors.address = 'Не указан адрес доставки';
+        }
+        
+        if (!this.data.email || this.data.email.trim() === '') {
+            errors.email = 'Не указан email';
+        }
+        
+        if (!this.data.phone || this.data.phone.trim() === '') {
+            errors.phone = 'Не указан телефон';
+        }
+        
+        return {
+            isValid: Object.keys(errors).length === 0,
+            errors
+        };
     }
 }

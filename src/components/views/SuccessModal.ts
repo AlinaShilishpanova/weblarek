@@ -3,25 +3,22 @@ import { ensureElement } from '../../utils/utils';
 
 interface ISuccessModalData {
     total: number;
-    onClose: () => void;
 }
 
 export class SuccessModal extends Component<ISuccessModalData> {
-    private closeButton: HTMLButtonElement;
-    private descriptionElement: HTMLElement;
+    protected totalElement: HTMLElement;
+    protected closeButton: HTMLButtonElement;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, onClose: () => void) {
         super(container);
         
-        this.closeButton = ensureElement<HTMLButtonElement>('.button', container);
-        this.descriptionElement = ensureElement<HTMLElement>('.order-success__description', container);
+        this.totalElement = ensureElement<HTMLElement>('.order-success__description', container);
+        this.closeButton = ensureElement<HTMLButtonElement>('.order-success__close', container);
+        
+        this.closeButton.addEventListener('click', onClose);
     }
 
     set total(value: number) {
-        this.descriptionElement.textContent = `Списано ${value} синапсов`;
-    }
-
-    set onClose(handler: () => void) {
-        this.closeButton.addEventListener('click', handler);
+        this.totalElement.textContent = `Списано ${value} синапсов`;
     }
 }

@@ -4,32 +4,32 @@ import { ensureElement } from '../../utils/utils';
 interface IBasketModalData {
     items: HTMLElement[];
     total: number;
-    onCheckout: () => void;
 }
 
 export class BasketModal extends Component<IBasketModalData> {
-    private list: HTMLElement;
-    private totalElement: HTMLElement;
-    private checkoutButton: HTMLButtonElement;
+    protected listElement: HTMLElement;
+    protected totalElement: HTMLElement;
+    protected buttonElement: HTMLButtonElement;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, onCheckout: () => void) {
         super(container);
         
-        this.list = ensureElement<HTMLElement>('.basket__list', container);
+        this.listElement = ensureElement<HTMLElement>('.basket__list', container);
         this.totalElement = ensureElement<HTMLElement>('.basket__price', container);
-        this.checkoutButton = ensureElement<HTMLButtonElement>('.basket__button', container);
+        this.buttonElement = ensureElement<HTMLButtonElement>('.basket__button', container);
+        
+        this.buttonElement.addEventListener('click', onCheckout);
     }
 
     set items(value: HTMLElement[]) {
-        this.list.replaceChildren(...value);
-        this.checkoutButton.disabled = value.length === 0;
+        this.listElement.replaceChildren(...value);
     }
 
     set total(value: number) {
         this.totalElement.textContent = `${value} синапсов`;
     }
 
-    set onCheckout(handler: () => void) {
-        this.checkoutButton.addEventListener('click', handler);
+    set buttonDisabled(value: boolean) {
+        this.buttonElement.disabled = value;
     }
 }

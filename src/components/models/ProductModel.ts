@@ -2,28 +2,28 @@ import { IProduct } from '../../types';
 import { EventEmitter } from '../base/Events';
 
 export class ProductModel extends EventEmitter {
-    private _items: IProduct[] = [];
-    private _previewItem: IProduct | null = null;
+    private items: IProduct[] = [];
+    private preview: IProduct | null = null;
 
     setItems(items: IProduct[]): void {
-        this._items = items;
+        this.items = items;
         this.emit('catalog:changed');
     }
 
     getItems(): IProduct[] {
-        return [...this._items];
+        return [...this.items];
     }
 
     getItem(id: string): IProduct | undefined {
-        return this._items.find(item => item.id === id);
+        return this.items.find(item => item.id === id);
     }
 
     setPreviewItem(item: IProduct): void {
-        this._previewItem = item;
+        this.preview = item;
         this.emit('preview:changed');
     }
 
     getPreviewItem(): IProduct | null {
-        return this._previewItem;
+        return this.preview;
     }
 }

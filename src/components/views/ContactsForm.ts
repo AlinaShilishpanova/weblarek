@@ -11,18 +11,20 @@ export class ContactsForm extends Form<IContactsFormData> {
     protected _emailInput: HTMLInputElement;
     protected _phoneInput: HTMLInputElement;
 
-    constructor(container: HTMLElement, events: IEvents) {
-        super(container, events);
+    constructor(events: IEvents, container: HTMLElement) {
+        super(events, container);
         
         this._emailInput = ensureElement<HTMLInputElement>('input[name="email"]', container);
         this._phoneInput = ensureElement<HTMLInputElement>('input[name="phone"]', container);
 
-        this._emailInput.addEventListener('input', () => {
-            this.events.emit('contacts:change-email', { email: this._emailInput.value });
+        this._emailInput.addEventListener('input', (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            this.onInputChange('email', target.value);
         });
 
-        this._phoneInput.addEventListener('input', () => {
-            this.events.emit('contacts:change-phone', { phone: this._phoneInput.value });
+        this._phoneInput.addEventListener('input', (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            this.onInputChange('phone', target.value);
         });
     }
 
@@ -32,17 +34,5 @@ export class ContactsForm extends Form<IContactsFormData> {
 
     set phone(value: string) {
         this._phoneInput.value = value;
-    }
-
-    set contactsError(messages: string[]) {
-        this.errors = messages;
-    }
-
-    render(data?: Partial<IContactsFormData>): HTMLElement {
-        if (data) {
-            if (data.email !== undefined) this.email = data.email;
-            if (data.phone !== undefined) this.phone = data.phone;
-        }
-        return this.container;
     }
 }

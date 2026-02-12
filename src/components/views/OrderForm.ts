@@ -12,8 +12,8 @@ export class OrderForm extends Form<IOrderFormData> {
     protected _cashButton: HTMLButtonElement;
     protected _addressInput: HTMLInputElement;
 
-    constructor(container: HTMLElement, events: IEvents) {
-        super(container, events);
+    constructor(events: IEvents, container: HTMLElement) {
+        super(events, container);
         
         this._cardButton = ensureElement<HTMLButtonElement>('button[name="card"]', container);
         this._cashButton = ensureElement<HTMLButtonElement>('button[name="cash"]', container);
@@ -27,8 +27,9 @@ export class OrderForm extends Form<IOrderFormData> {
             this.events.emit('order:select-payment', { payment: 'cash' });
         });
 
-        this._addressInput.addEventListener('input', () => {
-            this.events.emit('order:change-address', { address: this._addressInput.value });
+        this._addressInput.addEventListener('input', (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            this.onInputChange('address', target.value);
         });
     }
 
@@ -39,17 +40,5 @@ export class OrderForm extends Form<IOrderFormData> {
 
     set address(value: string) {
         this._addressInput.value = value;
-    }
-
-    set addressError(messages: string[]) {
-        this.errors = messages;
-    }
-
-    render(data?: Partial<IOrderFormData>): HTMLElement {
-        if (data) {
-            if (data.payment !== undefined) this.payment = data.payment;
-            if (data.address !== undefined) this.address = data.address;
-        }
-        return this.container;
     }
 }

@@ -1,88 +1,70 @@
 import { Card } from './Card';
-import { IProduct } from '../../types';
-import { CDN_URL, categoryMap } from '../../utils/constants';
 import { ensureElement } from '../../utils/utils';
+import { CDN_URL, categoryMap } from '../../utils/constants';
 
-interface IPreviewCardData extends IProduct {
-    inBasket: boolean;
+interface IPreviewCardData {
+    id: string;
+    title: string;
+    description: string;
+    image: string;
+    category: string;
+    price: number | null;
     buttonText: string;
     buttonDisabled: boolean;
+    onButtonClick: () => void;
 }
 
 export class PreviewCard extends Card<IPreviewCardData> {
-    private _category: HTMLElement;
-    private _image: HTMLImageElement;
-    private _description: HTMLElement;
-    private _button: HTMLButtonElement;
+    protected descriptionElement: HTMLElement;
+    protected categoryElement?: HTMLElement;
+    protected imageElement?: HTMLImageElement;
+    protected buttonElement?: HTMLButtonElement;
 
-    constructor(
-        container: HTMLElement,
-        private readonly onButtonClick?: (id: string) => void
-    ) {
+    constructor(container: HTMLElement) {
         super(container);
         
-        this._category = ensureElement<HTMLElement>('.card__category', container);
-        this._image = ensureElement<HTMLImageElement>('.card__image', container);
-        this._description = ensureElement<HTMLElement>('.card__text', container);
-        this._button = ensureElement<HTMLButtonElement>('.button', container);
-
-        if (onButtonClick) {
-            this._button.addEventListener('click', () => {
-                onButtonClick(this.id);
-            });
-        }
-    }
-
-    set id(value: string) {
-        this.container.dataset.id = value;
-    }
-
-    get id(): string {
-        return this.container.dataset.id || '';
-    }
-
-    set title(value: string) {
-        this._title.textContent = value;
-        this._image.alt = value;
+        this.descriptionElement = ensureElement<HTMLElement>('.card__text', container);
+        this.categoryElement = container.querySelector('.card__category') || undefined;
+        this.imageElement = container.querySelector<HTMLImageElement>('.card__image') || undefined;
+        this.buttonElement = container.querySelector<HTMLButtonElement>('.button') || undefined;
     }
 
     set description(value: string) {
-        this._description.textContent = value;
+        this.descriptionElement.textContent = value;
     }
 
     set category(value: string) {
-        this._category.textContent = value;
-        const categoryClass = categoryMap[value as keyof typeof categoryMap];
-        if (categoryClass) {
-            this._category.className = `card__category ${categoryClass}`;
+        if (this.categoryElement) {
+            this.categoryElement.textContent = value;
+            const categoryClass = categoryMap[value as keyof typeof categoryMap];
+            if (categoryClass) {
+                this.categoryElement.className = 'card__category ' + categoryClass;
+            }
         }
     }
 
     set image(value: string) {
-        this.setImage(this._image, `${CDN_URL}${value}`, this._title.textContent || '');
-    }
-
-    set price(value: number | null) {
-        this.setPrice(value);
+        if (this.imageElement) {
+            this.imageElement.src = `${CDN_URL}${value}`;
+            this.imageElement.alt = this.title;
+        }
     }
 
     set buttonText(value: string) {
-        this._button.textContent = value;
+        if (this.buttonElement) {
+            this.buttonElement.textContent = value;
+        }
     }
 
     set buttonDisabled(value: boolean) {
-        this._button.disabled = value;
+        if (this.buttonElement) {
+            this.buttonElement.disabled = value;
+        }
     }
 
-    render(data: IPreviewCardData): HTMLElement {
-        this.id = data.id;
-        this.title = data.title;
-        this.description = data.description;
-        this.category = data.category;
-        this.image = data.image;
-        this.price = data.price;
-        this.buttonText = data.buttonText;
-        this.buttonDisabled = data.buttonDisabled;
-        return this.container;
+    set onButtonClick(handler: () => void) {
+        if (this.buttonElement) {
+            this.buttonElement.addEventListener('click', handler);
+        }
     }
 }
