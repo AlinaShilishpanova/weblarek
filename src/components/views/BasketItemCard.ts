@@ -1,5 +1,6 @@
 import { Card } from './Card';
 import { IProduct } from '../../types';
+import { ensureElement } from '../../utils/utils';
 
 interface IBasketItemCardData extends IProduct {
     index: number;
@@ -7,32 +8,46 @@ interface IBasketItemCardData extends IProduct {
 }
 
 export class BasketItemCard extends Card<IBasketItemCardData> {
-    private _indexElement: HTMLElement;
-    private _deleteButton: HTMLButtonElement;
+    private indexElement: HTMLElement;
+    private deleteButton: HTMLButtonElement;
 
     constructor(container: HTMLElement) {
         super(container);
-        const indexEl = container.querySelector('.basket__item-index');
-        const deleteBtn = container.querySelector('.basket__item-delete');
         
-        if (!indexEl) throw new Error('Элемент .basket__item-index не найден');
-        if (!deleteBtn) throw new Error('Элемент .basket__item-delete не найден');
-        
-        this._indexElement = indexEl as HTMLElement;
-        this._deleteButton = deleteBtn as HTMLButtonElement;
+        this.indexElement = ensureElement<HTMLElement>('.basket__item-index', container);
+        this.deleteButton = ensureElement<HTMLButtonElement>('.basket__item-delete', container);
+    }
+
+    set index(value: number) {
+        this.indexElement.textContent = String(value + 1);
+    }
+
+    set id(value: string) {
+        this.container.dataset.id = value;
+    }
+
+    get id(): string {
+        return this.container.dataset.id || '';
+    }
+
+    set title(value: string) {
+        this._title.textContent = value;
+    }
+
+    set price(value: number | null) {
+        this.setPrice(value);
+    }
+
+    set onRemove(handler: (id: string) => void) {
+        this.deleteButton.addEventListener('click', () => {
+            handler(this.id);
+        });
     }
 
     render(data: IBasketItemCardData): HTMLElement {
         super.render(data);
-        
-        this.setText(this._title, data.title);
-        this.setPrice(data.price);
-        this.setText(this._indexElement, String(data.index + 1));
-        
-        this._deleteButton.addEventListener('click', () => {
-            data.onRemove(data.id);
-        });
-
+        this.index = data.index;
+        this.onRemove = data.onRemove;
         return this.container;
     }
 }

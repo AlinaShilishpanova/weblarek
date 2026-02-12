@@ -1,80 +1,47 @@
-import { Component } from '../base/Component';
+import { Form } from './Form';
 import { ensureElement } from '../../utils/utils';
+import { IEvents } from '../base/Events';
 
 interface IContactsFormData {
     email: string;
     phone: string;
 }
 
-export class ContactsForm extends Component<IContactsFormData> {
+export class ContactsForm extends Form<IContactsFormData> {
     protected _emailInput: HTMLInputElement;
     protected _phoneInput: HTMLInputElement;
-    protected _submitButton: HTMLButtonElement;
-    protected _errorElement: HTMLElement;
 
-    constructor(container: HTMLElement) {
-        super(container);
+    constructor(container: HTMLElement, events: IEvents) {
+        super(container, events);
         
         this._emailInput = ensureElement<HTMLInputElement>('input[name="email"]', container);
         this._phoneInput = ensureElement<HTMLInputElement>('input[name="phone"]', container);
-        this._submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', container);
-        this._errorElement = ensureElement<HTMLElement>('.form__errors', container);
 
-        this._emailInput.addEventListener('input', () => this.validateForm());
-        this._phoneInput.addEventListener('input', () => this.validateForm());
-        
-        this.container.addEventListener('submit', (event: Event) => {
-            event.preventDefault();
-            if (!this._submitButton.disabled) {
-                this.emitSubmit();
-            }
+        this._emailInput.addEventListener('input', () => {
+            this.events.emit('contacts:change-email', { email: this._emailInput.value });
+        });
+
+        this._phoneInput.addEventListener('input', () => {
+            this.events.emit('contacts:change-phone', { phone: this._phoneInput.value });
         });
     }
 
     set email(value: string) {
         this._emailInput.value = value;
-        this.validateForm();
     }
 
     set phone(value: string) {
         this._phoneInput.value = value;
-        this.validateForm();
     }
 
-    set errors(messages: string[]) {
-        this.setText(this._errorElement, messages.join(', '));
-        this._errorElement.classList.toggle('modal__message_error', messages.length > 0);
+    set contactsError(messages: string[]) {
+        this.errors = messages;
     }
 
-    clearErrors(): void {
-        this.setText(this._errorElement, '');
-        this._errorElement.classList.remove('modal__message_error');
-    }
-
-    private validateForm() {
-        const email = this._emailInput.value.trim();
-        const phone = this._phoneInput.value.trim();
-        
-        this._submitButton.disabled = email === '' || phone === '';
-        
-        if (email !== '' && phone !== '') {
-            this.clearErrors();
-        }
-    }
-
-    private emitSubmit() {
-        this.container.dispatchEvent(new CustomEvent('contacts:submit', {
-            detail: {
-                email: this._emailInput.value,
-                phone: this._phoneInput.value
-            }
-        }));
-    }
-
-    render(data?: IContactsFormData): HTMLElement {
+    render(data?: Partial<IContactsFormData>): HTMLElement {
         if (data) {
-            this.email = data.email;
-            this.phone = data.phone;
+            if (data.email !== undefined) this.email = data.email;
+            if (data.phone !== undefined) this.phone = data.phone;
         }
         return this.container;
     }

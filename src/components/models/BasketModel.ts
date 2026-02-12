@@ -11,7 +11,7 @@ export class BasketModel extends EventEmitter {
     addItem(item: IProduct): void {
         if (!this.contains(item.id)) {
             this.items.push(item);
-            this.emit('basket:changed', { items: [...this.items] });
+            this.emit('basket:changed');
         }
     }
 
@@ -19,13 +19,13 @@ export class BasketModel extends EventEmitter {
         const index = this.items.findIndex(item => item.id === id);
         if (index !== -1) {
             this.items.splice(index, 1);
-            this.emit('basket:changed', { items: [...this.items] });
+            this.emit('basket:changed');
         }
     }
 
     clearBasket(): void {
         this.items = [];
-        this.emit('basket:changed', { items: [...this.items] });
+        this.emit('basket:changed');
     }
 
     getTotal(): number {

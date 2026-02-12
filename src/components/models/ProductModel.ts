@@ -7,7 +7,7 @@ export class ProductModel extends EventEmitter {
 
     setItems(items: IProduct[]): void {
         this._items = items;
-        this.emit('catalog:changed', { items: this._items });
+        this.emit('catalog:changed');
     }
 
     getItems(): IProduct[] {
@@ -20,7 +20,7 @@ export class ProductModel extends EventEmitter {
 
     setPreviewItem(item: IProduct): void {
         this._previewItem = item;
-        this.emit('preview:changed', { item: this._previewItem });
+        this.emit('preview:changed');
     }
 
     getPreviewItem(): IProduct | null {

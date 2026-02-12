@@ -11,7 +11,7 @@ export class BuyerModel extends EventEmitter {
 
     setData(data: Partial<IBuyer>): void {
         this.data = { ...this.data, ...data };
-        this.emit('buyer:changed', { data: this.data });
+        this.emit('buyer:changed');
     }
 
     getData(): IBuyer {
@@ -25,14 +25,25 @@ export class BuyerModel extends EventEmitter {
             phone: '',
             address: ''
         };
-        this.emit('buyer:changed', { data: this.data });
+        this.emit('buyer:changed');
+    }
+
+    validatePaymentAndAddress(): { isValid: boolean; errors: string[] } {
+        const errors: string[] = [];
+        if (!this.data.payment) errors.push('Не выбран способ оплаты');
+        if (!this.data.address?.trim()) errors.push('Не указан адрес доставки');
+        return { isValid: errors.length === 0, errors };
+    }
+
+    validateContacts(): { isValid: boolean; errors: string[] } {
+        const errors: string[] = [];
+        if (!this.data.email?.trim()) errors.push('Не указан email');
+        if (!this.data.phone?.trim()) errors.push('Не указан телефон');
+        return { isValid: errors.length === 0, errors };
     }
 
     isValid(): boolean {
-        const data = this.data;
-        return !!data.payment && 
-               data.address.trim() !== '' && 
-               data.email.trim() !== '' && 
-               data.phone.trim() !== '';
+        return this.validatePaymentAndAddress().isValid && 
+               this.validateContacts().isValid;
     }
 }
